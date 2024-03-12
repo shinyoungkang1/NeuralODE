@@ -29,7 +29,7 @@ def get_best_1_e_time(data, threshold=1/np.e, maxlags=100):
     e_times = np.array([[get_autocorr_1_e_time(data[x, :, y], threshold=1/np.e, maxlags=100) for x in range(trials)] for y in range(features)])
     return np.nanmedian(e_times)
 
-def get_embedding_dim(x, delay=3, max_dim=12, threshold=0.95, max_rel_change=0.1, plot=True, noise=0.0):
+def get_embedding_dim(x, delay=3, max_dim=12, threshold=0.95, max_rel_change=0.1, plot=False, noise=0.0):
     x = numpy2ri.numpy2rpy(x)
     cao_emb_dim = nonlinearTseries.estimateEmbeddingDim(
         x,  # time series

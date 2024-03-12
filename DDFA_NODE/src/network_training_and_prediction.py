@@ -80,6 +80,31 @@ def train_network(data_train, data_val, device, samp_ts, val_ts, n_itrs, latent_
             print(f'Iter: {itr}, running avg mse: {loss.item()}, val_loss: {val_loss.item()}')
     return func, rec, dec, train_losses, val_losses
 
+def generate_data_from_model(gen_index):
+    with torch.no_grad():
+        # sample from trajectorys' approx. posterior
+
+        ts_pos = np.linspace(0, ts_num*gen_index, num=tot_num*gen_index)
+        ts_pos = torch.from_numpy(ts_pos).float().to(device)
+    
+        h = torch.zeros(1, samp_trajs_TE_test.shape[0], rnn_nhidden).to(device)
+        c = torch.zeros(1, samp_trajs_TE_test.shape[0], rnn_nhidden).to(device)
+    
+        hn = h[0, :, :]
+        cn = c[0, :, :]
+    
+        for t in reversed(range(samp_trajs_TE_test.size(1))):
+            obs = samp_trajs_TE_test[:, t, :]
+            out, hn, cn = rec.forward(obs, hn, cn)
+        qz0_mean, qz0_logvar = out[:, :latent_dim], out[:, latent_dim:]
+        epsilon = torch.randn(qz0_mean.size()).to(device)
+        z0 = epsilon * torch.exp(.5 * qz0_logvar) + qz0_mean
+
+        # forward in time and solve ode for reconstructions
+        pred_z = odeint(func, z0, ts_pos).permute(1, 0, 2) #change time and batch with permute
+        pred_x = dec(pred_z)
+        
+        return pred_x, pred_z
 
 # def load_model(path='model/ODE_TakenEmbedding_RLONG_rnn2_lstm256_tau18k5_LSTM_lr0.008_latent12_LSTMautoencoder_Dataloader_timestep500_epoch1410.pth')
     
