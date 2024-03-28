@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,16 +13,17 @@ class LatentODEfunc(nn.Module):
 
     def __init__(self, latent_dim=8, nhidden=50):
         super(LatentODEfunc, self).__init__()
-        #self.tanh = nn.ELU(inplace= True)
         self.tanh = nn.Tanh()
         self.fc1 = nn.Linear(latent_dim, nhidden)
         self.fc2 = nn.Linear(nhidden, nhidden)
         self.fc3 = nn.Linear(nhidden, latent_dim)
+        # self.dropout = nn.Dropout(dropout)
         self.nfe = 0
 
     def forward(self, t, x):
         self.nfe += 1
         out = self.fc1(x)
+        # out = self.dropout(out)
         out = self.tanh(out)
         out = self.fc2(out)
         out = self.tanh(out)
@@ -59,16 +61,19 @@ class RecognitionRNN(nn.Module):
 
 class Decoder(nn.Module):
 
-    def __init__(self, latent_dim=8, obs_dim=46, nhidden=50):
+    def __init__(self, latent_dim=8, obs_dim=46, nhidden=50, dropout=0.1):
         super(Decoder, self).__init__()
         self.relu = nn.ReLU(inplace=True)
         self.tanh = nn.Tanh()
         self.fc1 = nn.Linear(latent_dim, nhidden)
         self.fc2 = nn.Linear(nhidden, nhidden*2)
         self.fc3 = nn.Linear(nhidden*2, obs_dim)
+        self.dropout = nn.Dropout(dropout)
+
 
     def forward(self, z):
         out = self.fc1(z)
+        out = self.dropout(out)
         out = self.tanh(out)
         out = self.fc2(out)
         out = self.tanh(out)

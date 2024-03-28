@@ -67,5 +67,6 @@ def takens_embedding(data, tau, k):
 def embed_data(data, e_time_threshold=1/np.e, maxlags=100, max_dim=12, nn_threshold=0.95, max_rel_change=0.1, plot=True, noise=0.0):
     best_delay = np.ceil(get_best_1_e_time(data, maxlags=maxlags, threshold=e_time_threshold)).astype(int)
     best_dim = np.ceil(get_embedding_dim(data, max_dim=max_dim, threshold=nn_threshold, max_rel_change=max_rel_change, plot=plot, noise=noise)).astype(int)
+    print(f"Data has been embedded using a delay of {best_delay} timesteps and an embedding dimension of {best_dim}")
     return takens_embedding(data, best_delay, best_dim), best_dim, best_delay
     
